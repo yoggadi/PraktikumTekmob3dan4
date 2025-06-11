@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => ShoppingListModel(),
       child: MaterialApp(
-        title: 'Amajon',
+        title: 'Amajon Store',
         theme: ThemeData(
           primarySwatch: Colors.blue,
           useMaterial3: true,

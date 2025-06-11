@@ -41,8 +41,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.dispose();
   }
 
+  // Fungsi validasi email dengan regex yang BENAR
   bool isEmailValid(String email) {
-    final emailRegex = RegExp(r'^[^@\\s]+@[^@\\s]+\\.[^@\\s]+\$');
+    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
     return emailRegex.hasMatch(email);
   }
 
@@ -56,6 +57,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           key: _formKey,
           child: Column(
             children: [
+              // Foto profil yang dapat ditekan
               GestureDetector(
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -68,6 +70,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+
+              // Input nama
               TextFormField(
                 controller: nameController,
                 decoration: const InputDecoration(labelText: 'Nama'),
@@ -78,10 +82,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   return null;
                 },
               ),
+
+              // Input bio
               TextFormField(
                 controller: bioController,
                 decoration: const InputDecoration(labelText: 'Bio'),
               ),
+
+              // Input email dengan validasi
               TextFormField(
                 controller: emailController,
                 decoration: const InputDecoration(labelText: 'Email'),
@@ -95,10 +103,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   return null;
                 },
               ),
+
               const SizedBox(height: 20),
+
+              // Tombol Simpan
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
+                    // Jika form valid, kirim data kembali ke halaman sebelumnya
                     Navigator.pop(context, {
                       'name': nameController.text.trim(),
                       'bio': bioController.text.trim(),
