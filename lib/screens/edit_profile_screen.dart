@@ -11,11 +11,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController nameController;
   late TextEditingController bioController;
   late TextEditingController emailController;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
-    print('initState: EditProfileScreen dimulai');
     nameController = TextEditingController();
     bioController = TextEditingController();
     emailController = TextEditingController();
@@ -24,8 +24,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, String>?;
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, String>?;
 
     if (args != null) {
       nameController.text = args['name'] ?? '';
@@ -39,8 +38,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     nameController.dispose();
     bioController.dispose();
     emailController.dispose();
-    print('dispose: EditProfileScreen ditutup');
     super.dispose();
+  }
+
+  bool isEmailValid(String email) {
+    final emailRegex = RegExp(r'^[^@\\s]+@[^@\\s]+\\.[^@\\s]+\$');
+    return emailRegex.hasMatch(email);
   }
 
   @override
@@ -49,46 +52,64 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       appBar: AppBar(title: const Text('Edit Profil')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // GestureDetector pada foto profil
-            GestureDetector(
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Foto Profil Ditekan!')),
-                );
-              },
-              child: const CircleAvatar(
-                radius: 40,
-                backgroundImage: AssetImage('assets/profile.png'),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Foto Profil Ditekan!')),
+                  );
+                },
+                child: const CircleAvatar(
+                  radius: 40,
+                  backgroundImage: AssetImage('assets/profile.jpg'),
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: 'Nama'),
-            ),
-            TextField(
-              controller: bioController,
-              decoration: const InputDecoration(labelText: 'Bio'),
-            ),
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context, {
-                  'name': nameController.text,
-                  'bio': bioController.text,
-                  'email': emailController.text,
-                });
-              },
-              child: const Text('Simpan'),
-            ),
-          ],
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Nama'),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Nama tidak boleh kosong';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: bioController,
+                decoration: const InputDecoration(labelText: 'Bio'),
+              ),
+              TextFormField(
+                controller: emailController,
+                decoration: const InputDecoration(labelText: 'Email'),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Email tidak boleh kosong';
+                  } else if (!isEmailValid(value.trim())) {
+                    return 'Email tidak valid';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    Navigator.pop(context, {
+                      'name': nameController.text.trim(),
+                      'bio': bioController.text.trim(),
+                      'email': emailController.text.trim(),
+                    });
+                  }
+                },
+                child: const Text('Simpan'),
+              ),
+            ],
+          ),
         ),
       ),
     );

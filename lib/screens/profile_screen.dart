@@ -24,6 +24,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       name = prefs.getString('name') ?? 'Yoga Adi Pamungkas';
+      email = prefs.getString('email') ?? 'yogaadi@gmail.com';
       bio = prefs.getString('bio') ?? 'Praktikum Teknologi Mobile';
     });
   }
@@ -31,13 +32,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _saveProfile() async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString('name', name);
+    prefs.setString('email', email);
     prefs.setString('bio', bio);
   }
 
-  void updateProfile(String newName, String newBio) {
+  void updateProfile(String newName, String newBio, String newEmail) {
     setState(() {
       name = newName;
       bio = newBio;
+      email = newEmail;
     });
     _saveProfile();
   }
@@ -56,9 +59,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SnackBar(content: Text('Foto Profil Ditekan!')),
                 );
               },
-              child: CircleAvatar(
+              child: const CircleAvatar(
                 radius: 50,
-                backgroundImage: const AssetImage('assets/profile.png'),
+                backgroundImage: AssetImage('assets/profile.jpg'),
               ),
             ),
             const SizedBox(height: 20),
@@ -71,11 +74,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 final result = await Navigator.pushNamed(
                   context,
                   '/edit',
-                  arguments: {'name': name, 'bio': bio},
+                  arguments: {'name': name, 'bio': bio, 'email': email},
                 );
 
                 if (result != null && result is Map<String, String>) {
-                  updateProfile(result['name']!, result['bio']!);
+                  updateProfile(result['name']!, result['bio']!, result['email']!);
                 }
               },
               child: const Text('Edit Profil'),

@@ -23,4 +23,5 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/profile.png # Ditambahkan agar gambar profil bisa ditampilkan
+    - assets/profile.jpg # Ditambahkan agar gambar profil bisa ditampilkan
+    - assets/images/

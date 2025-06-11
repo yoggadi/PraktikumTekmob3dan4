@@ -9,51 +9,93 @@ class ShoppingListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shoppingList = context.watch<ShoppingListModel>();
     final item = context.select<ShoppingListModel, ShoppingItem>((model) => model.items[index]);
 
-    return ListTile(
-      title: Text(
-        item.name,
-        style: TextStyle(
-          decoration: item.purchased ? TextDecoration.lineThrough : null,
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      elevation: 3,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        leading: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Checkbox(
+              value: item.purchased,
+              onChanged: (_) {
+                shoppingList.togglePurchased(index);
+              },
+            ),
+            const SizedBox(width: 8.0),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8.0),
+              child: Image.asset(
+                item.imagePath, // Perbaikan disini, gunakan Image.asset
+                width: 50,
+                height: 50,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ],
         ),
-      ),
-      leading: Checkbox(
-        value: item.purchased,
-        onChanged: (_) {
-          context.read<ShoppingListModel>().togglePurchased(index);
-        },
-      ),
-      trailing: Wrap(
-        spacing: 8,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              _editItemDialog(context, index, item.name);
-            },
+        title: Text(
+          item.name,
+          style: TextStyle(
+            fontSize: 16,
+            decoration: item.purchased ? TextDecoration.lineThrough : null,
+            color: item.purchased ? Colors.grey : Colors.black,
           ),
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () {
-              context.read<ShoppingListModel>().removeItem(index);
-            },
-          ),
-        ],
+        ),
+        subtitle: Text(
+          'Rp ${item.price.toStringAsFixed(0)}',
+          style: const TextStyle(color: Colors.blue),
+        ),
+        trailing: Wrap(
+          spacing: 8,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.edit, color: Colors.orange),
+              onPressed: () {
+                _editItemDialog(context, index, item.name, item.price);
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () {
+                shoppingList.removeItem(index);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('${item.name} dihapus dari keranjang')),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  void _editItemDialog(BuildContext context, int index, String currentName) {
-    final TextEditingController controller = TextEditingController(text: currentName);
+  void _editItemDialog(BuildContext context, int index, String currentName, double currentPrice) {
+    final TextEditingController nameController = TextEditingController(text: currentName);
+    final TextEditingController priceController = TextEditingController(text: currentPrice.toString());
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Edit Item'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
+        title: const Text('Edit Produk'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              autofocus: true,
+              decoration: const InputDecoration(labelText: 'Nama Produk'),
+            ),
+            TextField(
+              controller: priceController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Harga Produk'),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -63,7 +105,11 @@ class ShoppingListItem extends StatelessWidget {
           ElevatedButton(
             child: const Text('Simpan'),
             onPressed: () {
-              context.read<ShoppingListModel>().editItem(index, controller.text);
+              context.read<ShoppingListModel>().editItem(
+                    index,
+                    nameController.text,
+                    double.tryParse(priceController.text) ?? currentPrice,
+                  );
               Navigator.of(context).pop();
             },
           ),

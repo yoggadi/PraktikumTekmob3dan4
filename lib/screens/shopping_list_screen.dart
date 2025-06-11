@@ -11,8 +11,6 @@ class ShoppingListScreen extends StatefulWidget {
 }
 
 class _ShoppingListScreenState extends State<ShoppingListScreen> {
-  final TextEditingController _controller = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     final shoppingList = context.watch<ShoppingListModel>();
@@ -26,18 +24,12 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: const InputDecoration(labelText: 'Item baru'),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _showAddItemDialog(context);
+                    },
+                    child: const Text('Tambah Item Baru'),
                   ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    context.read<ShoppingListModel>().addItem(_controller.text);
-                    _controller.clear();
-                  },
-                  child: const Text('Tambah'),
                 ),
               ],
             ),
@@ -49,6 +41,61 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                 return ShoppingListItem(index: index);
               },
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAddItemDialog(BuildContext context) {
+    final TextEditingController nameController = TextEditingController();
+    final TextEditingController priceController = TextEditingController();
+    final TextEditingController imageController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Tambah Item Baru'),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Nama Produk'),
+              ),
+              TextField(
+                controller: priceController,
+                decoration: const InputDecoration(labelText: 'Harga Produk'),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: imageController,
+                decoration: const InputDecoration(labelText: 'Path Gambar (contoh: assets/image.png)'),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              String name = nameController.text.trim();
+              String imagePath = imageController.text.trim();
+              double? price = double.tryParse(priceController.text.trim());
+
+              if (name.isNotEmpty && imagePath.isNotEmpty && price != null && price > 0) {
+                context.read<ShoppingListModel>().addItem(name, imagePath, price);
+                Navigator.of(context).pop();
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Mohon isi semua data dengan benar')),
+                );
+              }
+            },
+            child: const Text('Tambah'),
           ),
         ],
       ),
